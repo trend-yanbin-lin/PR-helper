@@ -1,0 +1,39 @@
+name: PR Comment Auto Modify
+on:
+  issue_comment:
+    types: [created]  # 當有新的評論創建時觸發
+jobs:
+  auto-modify:
+    if: > 
+      github.event.issue.pull_request && 
+      (contains(github.event.comment.body, '添加修改') || 
+       contains(github.event.comment.body, '重新修改') || 
+       contains(github.event.comment.body, '刪除修改'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: true   # 確保可以推送回遠端
+          fetch-depth: 0
+
+      - name: Fetch PR branch
+        # 如果是PR評論，checkout默認是main分支，需要抓取對應PR的head分支
+        run: |
+          git fetch origin pull/${{ github.event.issue.number }}/head:pr-${{ github.event.issue.number }}
+          git checkout pr-${{ github.event.issue.number }}
+        # 以上透過拉取 PR 編號的 head 分支並切換到該分支:contentReference[oaicite:2]{index=2}
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: pip install openai
+
+      - name: Run Auto Modify Script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: python auto_mod_tool.py
