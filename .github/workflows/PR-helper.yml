@@ -1,7 +1,7 @@
 name: PR Comment Auto Modify
 on:
   issue_comment:
-    types: [created]  # 當有新的評論創建時觸發
+    types: [created, edited]  # 當有新的評論創建時觸發
 jobs:
   auto-modify:
     if: > 
