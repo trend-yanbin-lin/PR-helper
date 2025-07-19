@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 event_path = os.environ.get('GITHUB_EVENT_PATH')
 with open(event_path, 'r') as f:
     event = json.load(f)
+logger.info(f"Worker get event\n{event}")
 comment_body = event["comment"]["body"]
 issue_number = event["issue"]["number"]            # 對應的 Issue/PR 編號
 comment_id = event["comment"]["id"]                # 評論ID，可用於唯一標識這次修改
