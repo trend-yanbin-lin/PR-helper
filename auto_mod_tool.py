@@ -91,7 +91,6 @@ def apply_comment_fix():
 
 
 if __name__ == '__main__':
-    github-actions[bot]@users.noreply.github.com
     subprocess.run(["git", "config", "--global", "user.email", "github-actions[bot]@users.noreply.github.com"])
     subprocess.run(["git", "config", "--global", "user.name", "github-actions[bot]"])  
     
