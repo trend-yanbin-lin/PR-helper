@@ -91,6 +91,10 @@ def apply_comment_fix():
 
 
 if __name__ == '__main__':
+    github-actions[bot]@users.noreply.github.com
+    subprocess.run(["git", "config", "--global", "user.email", "github-actions[bot]@users.noreply.github.com"])
+    subprocess.run(["git", "config", "--global", "user.name", "github-actions[bot]"])  
+    
     pr_json = request_json_api(event["issue"]["pull_request"]["url"], GIT_API_HEADERS)
     res = subprocess.run(["git", "fetch", "origin", f'bot/{pr_json["head"]["ref"]}'])
     if res.returncode != 0:
