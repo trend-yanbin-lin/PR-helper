@@ -19,20 +19,13 @@ jobs:
           persist-credentials: true   # 確保可以推送回遠端
           fetch-depth: 0
 
-      - name: Fetch PR branch
-        # 如果是PR評論，checkout默認是main分支，需要抓取對應PR的head分支
-        run: |
-          git fetch origin pull/${{ github.event.issue.number }}/head:pr-${{ github.event.issue.number }}
-          git checkout pr-${{ github.event.issue.number }}
-        # 以上透過拉取 PR 編號的 head 分支並切換到該分支:contentReference[oaicite:2]{index=2}
-
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
       - name: Install Dependencies
-        run: pip install openai>=1.55.3
+        run: pip install -r requirements.txt
 
       - name: Run Auto Modify Script
         env:
