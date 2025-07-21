@@ -38,5 +38,6 @@ jobs:
         run: python auto_mod_tool.py
 
       - name: Push to branch
-        run: |
-          git push origin $(git rev-parse --abbrev-ref HEAD)
+        run: gh pr create -B $(git rev-parse --abbrev-ref HEAD | sed 's/^bot\///') -H $(git rev-parse --abbrev-ref HEAD) --title 'Merge branch_to_merge into base_branch' --body 'Created by Github action'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
