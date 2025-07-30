@@ -1,8 +1,8 @@
 def get_message() -> str:
-	return "Hello, World!"
+    return "Hello, World!"
 
-def main():
-	print(get_message())
+def main() -> str:
+    print(get_message())
 
 if __name__ == "__main__":
-	main()
+    main()
