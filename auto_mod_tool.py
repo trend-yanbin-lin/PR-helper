@@ -92,7 +92,7 @@ Output:
     if res.startswith('```') and res.startswith('```'):
         res = res[3:-3]
 
-    return res['output']
+    return res
 
 
 def apply_comment_fix():
