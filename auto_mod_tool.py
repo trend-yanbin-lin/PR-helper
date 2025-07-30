@@ -1,5 +1,20 @@
 import os, json, subprocess, logging, requests, datetime
 import openai
+from langchain_core.tools import tool
+from langchain_openai import ChatOpenAI
+from langchain.agents import load_tools, initialize_agent, tool, AgentType
+import requests
+from typing import Annotated
+
+@tool("web_page_viewer", description="取得指定 URL 的網頁 HTML 原始內容")
+def web_page_viewer(url: str) -> str:
+    """
+    url: 目標網頁的完整 URL
+    回傳值：網頁的原始 HTML 文字
+    """
+    resp = requests.get(url)
+    resp.raise_for_status()
+    return resp.text
 
 # 初始化日誌紀錄器
 logging.basicConfig(level=logging.INFO)
@@ -40,32 +55,44 @@ def handle_pr_comments():
     return threads
 
 def get_ai_fix_file_content(comment, file):
-    prompt = f"""Modify the file according to the PR comment requirements.
-
-PR comment:
-```{comment}```
+    prompt = f"""You will get the whole fileModify the file according to the PR comment requirements.
 
 file content:
 ```{file}```
 
-Just provide the revised file content directly, without saying anything else."""
+PR comment:
+```{comment}```
 
-    client = openai.OpenAI(
-        api_key=os.getenv("OPENAI_API_KEY"),
-        base_url=os.getenv("OPENAI_ENDPOINT_URL"),
-    )
+Your modifacation should follow the the specification write on the following page
+https://trend-yanbin-lin.github.io/publish-style-guide/
 
-    completion = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {
-                "role": "user",
-                "content": prompt,
-            },
-        ],
-    )
+Just provide the revised file content directly, without saying anything else.
+The following is example:
 
-    return completion.choices[0].message.content
+file content:
+```logging.info('debug log')```
+
+PR comment:
+```It should be logging.debug```
+
+Output:
+```logging.debug('debug log')```"""
+
+
+    llm = ChatOpenAI(api_key=os.getenv("OPENAI_API_KEY"), base_url=os.getenv("OPENAI_ENDPOINT_URL"), model="gpt-4o")
+    agent = initialize_agent(
+        [web_page_viewer],
+        llm,
+        agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+        handle_parsing_errors=True,
+        verbose=True)
+    res = agent(prompt)
+
+    res = res['output']
+    if res.startswith('```') and res.startswith('```'):
+        res = res[3:-3]
+
+    return res['output']
 
 
 def apply_comment_fix():
@@ -91,9 +118,6 @@ def apply_comment_fix():
 
 
 if __name__ == '__main__':
-    subprocess.run(["git", "config", "--global", "user.email", "github-actions[bot]@users.noreply.github.com"])
-    subprocess.run(["git", "config", "--global", "user.name", "github-actions[bot]"])  
-    
     pr_json = request_json_api(event["issue"]["pull_request"]["url"], GIT_API_HEADERS)
     res = subprocess.run(["git", "fetch", "origin", f'bot/{pr_json["head"]["ref"]}'])
     if res.returncode != 0:
