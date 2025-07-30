@@ -29,4 +29,8 @@ def get_video_info(url):
 
 def sort_videos_by_likes(playlist_url):
     playlist_info = get_video_info(playlist_url)
-    if 'entries' not in playlist_info
+    if 'entries' not in playlist_info:
+        return []  # Handle case when there are no videos in the playlist
+    videos = playlist_info['entries']
+    sorted_videos = sorted(videos, key=lambda v: v.get('like_count', 0), reverse=True)
+    return sorted_videos
