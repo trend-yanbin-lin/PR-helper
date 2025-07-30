@@ -1,4 +1,4 @@
-import os, json, subprocess, logging, requests, datetime
+import os, json, subprocess, logging, requests, datetime, re
 from langchain_openai import OpenAIEmbeddings
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
@@ -26,8 +26,13 @@ filepath_map = {
     'codingStyle':  "https://trend-yanbin-lin.github.io/publish-style-guide/",
 }
 
+def extract_code_blocks(text):
+    pattern = r"```[\w\s]*\n(.*?)```"
+    matches = re.findall(pattern, text, re.DOTALL)
+    return matches
+
 @tool
-def get_reference(name: Annotated[str, "name of the data you want"]):
+def get_reference(name: Annotated[str, "name of the data you want"], question: Annotated[str, "the question you want get answer of this data"]):
     """Get content of a document or a repository"""
     # Define the path where the vector store was saved
     load_path = filepath_map[name]
@@ -39,7 +44,7 @@ def get_reference(name: Annotated[str, "name of the data you want"]):
 
     # Load the vector store from the file
     vector_store = InMemoryVectorStore.load(path=load_path, embedding=embeddings)
-    retrieved_docs = vector_store.similarity_search(UserQuery, k=2)
+    retrieved_docs = vector_store.similarity_search(question, k=2)
     serialized = "\n\n".join(
         (f"Source: {doc.metadata}\nContent: {doc.page_content}")
         for doc in retrieved_docs
@@ -161,10 +166,8 @@ Just provide the revised file content directly, without saying anything else."""
     res = agent(prompt)
 
     res = res['output']
-    if res.startswith('```') and res.startswith('```'):
-        res = res[3:-3]
 
-    return res
+    return extract_code_blocks(res)
 
 
 def apply_comment_fix():
