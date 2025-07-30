@@ -27,7 +27,7 @@ filepath_map = {
 }
 
 @tool
-def get_reference(name: Annotated[str, "name of the data you want"]):
+def get_reference(name: Annotated[str, "name of the data you want"], question: Annotated[str, "the question you want get answer of this data"]):
     """Get content of a document or a repository"""
     # Define the path where the vector store was saved
     load_path = filepath_map[name]
@@ -39,7 +39,7 @@ def get_reference(name: Annotated[str, "name of the data you want"]):
 
     # Load the vector store from the file
     vector_store = InMemoryVectorStore.load(path=load_path, embedding=embeddings)
-    retrieved_docs = vector_store.similarity_search(UserQuery, k=2)
+    retrieved_docs = vector_store.similarity_search(question, k=2)
     serialized = "\n\n".join(
         (f"Source: {doc.metadata}\nContent: {doc.page_content}")
         for doc in retrieved_docs
