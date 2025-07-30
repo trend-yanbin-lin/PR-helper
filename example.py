@@ -1,3 +1,4 @@
+python
 import youtube_dl
 from sortedcollections import ValueSortedDict
 
@@ -29,4 +30,10 @@ def get_video_info(url):
 
 def sort_videos_by_likes(playlist_url):
     playlist_info = get_video_info(playlist_url)
-    if 'entries' not in playlist_info
+    if 'entries' not in playlist_info:
+        return None
+    sorted_videos = ValueSortedDict()
+    for entry in playlist_info['entries']:
+        if 'like_count' in entry:
+            sorted_videos[entry] = entry['like_count']
+    return sorted_videos
