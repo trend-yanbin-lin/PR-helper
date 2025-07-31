@@ -8,7 +8,7 @@ from typing import Annotated
 from langchain_core.vectorstores import InMemoryVectorStore
 
 # 初始化日誌紀錄器
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 GIT_API_HEADERS = {"Authorization": f"Bearer {os.environ.get('GITHUB_TOKEN')}", "Accept": "application/vnd.github+json"}
