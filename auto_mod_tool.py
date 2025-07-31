@@ -1,4 +1,4 @@
-import os, json, subprocess, logging, requests, datetime
+import os, json, subprocess, logging, requests, datetime, re
 from langchain_openai import OpenAIEmbeddings
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
@@ -25,6 +25,11 @@ filepath_map = {
     'sortedcollections': "sortedcollections.pkl",
     'codingStyle':  "https://trend-yanbin-lin.github.io/publish-style-guide/",
 }
+
+def extract_code_blocks(text):
+    pattern = r"```[\w\s]*\n(.*?)```"
+    matches = re.findall(pattern, text, re.DOTALL)
+    return matches
 
 @tool
 def get_reference(name: Annotated[str, "name of the data you want"], question: Annotated[str, "the question you want get answer of this data"]):
@@ -161,10 +166,8 @@ Just provide the revised file content directly, without saying anything else."""
     res = agent(prompt)
 
     res = res['output']
-    if res.startswith('```') and res.startswith('```'):
-        res = res[3:-3]
 
-    return res
+    return extract_code_blocks(res)
 
 
 def apply_comment_fix():
